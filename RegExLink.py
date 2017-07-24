@@ -25,12 +25,16 @@ class RegExLinkEventCommand(sublime_plugin.EventListener):
     def _highlight(self, view):
         settings = sublime.load_settings("RegExLink.sublime-settings")
         regex_link_def = settings.get('regex_link_def')
-        regex_link_mark_style = settings.get('regex_link_mark_style')
-        regex_link_outlines = settings.get('regex_link_outlines', False)
+        regex_link_mark = settings.get('regex_link_mark')
+        regex_link_highlight = settings.get('regex_link_highlight')
 
-        flags = sublime.DRAW_NO_FILL
-        if not regex_link_outlines:
-            flags = sublime.HIDDEN
+        flags = sublime.HIDDEN
+        if regex_link_highlight == "underline":
+            flags = sublime.DRAW_NO_FILL | sublime.DRAW_NO_OUTLINE | sublime.DRAW_SOLID_UNDERLINE
+        if regex_link_highlight == "outline":
+            flags = sublime.DRAW_NO_FILL
+        if regex_link_highlight == "fill":
+            flags = sublime.DRAW_NO_OUTLINE
 
         for link_def in regex_link_def:
             if 'link' in link_def:
@@ -41,7 +45,7 @@ class RegExLinkEventCommand(sublime_plugin.EventListener):
                     view.add_regions(
                         REGION_NAME +
                         link_def['name'], result, link_def['style'],
-                        regex_link_mark_style, flags)
+                        regex_link_mark, flags)
 
             if 'command' in link_def:
                 extract = []
@@ -51,7 +55,7 @@ class RegExLinkEventCommand(sublime_plugin.EventListener):
                     view.add_regions(
                         REGION_NAME +
                         link_def['name'], result, link_def['style'],
-                        regex_link_mark_style, flags)
+                        regex_link_mark, flags)
 
 
 class RegExLinkCommand(sublime_plugin.TextCommand):
@@ -114,7 +118,7 @@ class RegExLinkCommand(sublime_plugin.TextCommand):
                     if sel.b >= region[0].a and sel.a <= region[0].b:
                         self.contentmenu = link_def[
                             'name'] + " " + self.view.substr(region[0])
-                        return "Open " + self.contentmenu
+                        return "Open RegExLink " + self.contentmenu
                     else:
                         self.contentmenu = ""
-        return "Open " + self.contentmenu
+        return "Open RegExLink " + self.contentmenu
